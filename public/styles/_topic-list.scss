@@ -1,0 +1,37 @@
+@import 'colors';
+@import 'spacing';
+.topic-list {
+	margin: $mobile-margin;
+	padding: $mobile-margin;
+	background: $background;
+
+	input {
+		border: 0;
+		display: block;
+		width: 100%;
+		height: 1.33em;
+		font-size: 3em;
+		max-width: auto;
+		background: $background;
+		color: $alt-text;
+		border-bottom: 2px solid darken($alt-text, 30%);
+		// box-sizing: border-box;
+
+		&:focus {
+			border: 0;
+			border-bottom: 2px solid $alt-text;
+		}
+	}
+
+	ul {
+		display: block;
+
+		li {
+			display: block;
+			list-style-type: none;
+			background: $alt-text;
+			padding: 0.5em;
+			font-size: 2em;
+		}
+	}
+}
