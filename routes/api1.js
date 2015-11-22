@@ -48,6 +48,7 @@ router.post('/search', function(req, res, next) {
 		.then(function() {
 			topicModels.forEach(function(model) {
 				queue.addJob('topic', {
+					title: model.get('name'),
 					topic: model
 				}, req.sessionID);
 			});
@@ -76,6 +77,7 @@ router.post('/search/:key/topic', function(req, res, next) {
 	})
 	.then(function() {
 		queue.addJob('topic', {
+			title: topicModel.get('name'),
 			topic: topicModel
 		}, req.sessionID);
 		res.json(s.toJSON());
