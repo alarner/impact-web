@@ -24,8 +24,17 @@ let auth = require('./routes/auth');
 
 let app = express();
 
+let io = require('socket.io');
+let ios = require('socket.io-express-session');
+
+app.io = io();
+
+
 let sessionConfig = _.extend({}, config.session, {store: new RedisStore()});
-app.use(session(sessionConfig));
+let sess = session(sessionConfig);
+app.use(sess);
+app.io.use(ios(sess));
+require('./lib/kue').init(app.io);
 
 let apiMiddleware = require('./lib/bookshelf-api')({
 	path: path.join(__dirname, 'models')

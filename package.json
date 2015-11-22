@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "start": "node --use_strict ./bin/www"
+    "start": "node --use_strict ./bin/www",
+    "resetdb": "./bin/resetdb.sh"
   },
   "devDependencies": {
     "babel-core": "^6.0.12",
@@ -26,6 +27,7 @@
     "backbone": "^1.2.3",
     "body-parser": "~1.14.1",
     "bookshelf": "^0.9.1",
+    "bottleneck": "^1.9.1",
     "config-loader": "github:alarner/config-loader",
     "connect-redis": "^3.0.1",
     "cookie-parser": "~1.4.0",
@@ -51,9 +53,10 @@
     "pg": "^4.4.3",
     "react": "^0.14.0",
     "react-dom": "^0.14.0",
-    "request": "^2.65.0",
+    "request": "^2.67.0",
     "serve-favicon": "~2.3.0",
-    "socket.io": "^1.3.7",
+    "socket.io": "github:alarner/socket.io",
+    "socket.io-express-session": "^0.1.3",
     "validator": "^4.2.1"
   }
 }

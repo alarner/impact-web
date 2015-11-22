@@ -5,6 +5,7 @@ let Hashids = require('hashids');
 let hashids = new Hashids(config.hashids.salt);
 let Search = require('../models/Search');
 let Topics = require('../collections/Topics');
+let queue = require('../lib/kue');
 
 router.post('/search', function(req, res, next) {
 	req.body.topics = req.body.topics || [];
@@ -23,6 +24,7 @@ router.post('/search', function(req, res, next) {
 		});
 	}
 
+	let topicModels = null;
 	bookshelf.transaction(function(t) {
 		let s = new Search({
 			name: req.body.name,
@@ -36,13 +38,19 @@ router.post('/search', function(req, res, next) {
 		.then(function(search) {
 			return Topics.upsert(req.body.topics, t);
 		})
-		.then(function(topicsModels) {
-			return s.topics().attach(topicsModels.map((topic) => {
+		.then(function(tm) {
+			topicModels = tm;
+			return s.topics().attach(tm.map((topic) => {
 				return topic.id;
 			}), {transacting: t});
 		})
 		.then(t.commit)
 		.then(function() {
+			topicModels.forEach(function(model) {
+				queue.addJob('topic', {
+					topic: model
+				}, req.sessionID);
+			});
 			res.json(s.toJSON());
 		})
 		.catch(function(err) {
@@ -56,15 +64,20 @@ router.post('/search', function(req, res, next) {
 });
 
 router.post('/search/:key/topic', function(req, res, next) {
+	let topicModel = null;
 	let s = Search.forge({id: hashids.decode(req.params.key)[0]});
 	Topics
 	.upsert([req.body.topic])
-	.then(function(topicsModels) {
-		return s.topics().attach(topicsModels.map((topic) => {
+	.then(function(models) {
+		topicModel = models.at(0);
+		return s.topics().attach(models.map((topic) => {
 			return topic.id;
 		}));
 	})
 	.then(function() {
+		queue.addJob('topic', {
+			topic: topicModel
+		}, req.sessionID);
 		res.json(s.toJSON());
 	})
 	.catch(function(err) {
