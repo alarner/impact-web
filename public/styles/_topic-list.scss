@@ -30,8 +30,24 @@
 			display: block;
 			list-style-type: none;
 			background: $alt-text;
-			padding: 0.5em;
 			font-size: 2em;
+			position: relative;
+
+			.topic {
+				padding: 0.5em;
+				background: transparent;
+    			position: relative;
+			}
+
+			.progress {
+				position: absolute;
+				top: 0;
+				left: 0;
+				height: 100%;
+				background: #557F9A;
+				width: 0;
+				transition: width 0.5s;
+			}
 		}
 	}
 }

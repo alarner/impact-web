@@ -13,8 +13,28 @@ module.exports = React.createClass({
 	},
 	componentWillMount: function() {
 		this.socket = io();
-		this.socket.on('my message', function(msg) {
-			console.log(msg);
+		this.socket.on('progress', (message) => {
+			let topic = this.state.topics.find((topicInfo) => {
+				return topicInfo.topic === message.data.title;
+			});
+			if(topic) {
+				topic.progress = message.progress;
+				this.setState({
+					topics: this.state.topics
+				});
+			}
+		});
+
+		this.socket.on('complete', (message) => {
+			let topic = this.state.topics.find((topicInfo) => {
+				return topicInfo.topic === message.data.title;
+			});
+			if(topic) {
+				topic.progress = 100;
+				this.setState({
+					topics: this.state.topics
+				});
+			}
 		});
 	},
 	render: function() {
@@ -28,7 +48,10 @@ module.exports = React.createClass({
 		);
 	},
 	addTopic: function(topic) {
-		this.state.topics.push(topic);
+		this.state.topics.push({
+			topic: topic,
+			progress: 0
+		});
 		if(!this.state.key) {
 			this.state.disabled = true;
 			$.ajax({
@@ -36,8 +59,10 @@ module.exports = React.createClass({
 				type: 'post',
 				contentType: 'application/json',
 				data: JSON.stringify({
-					topics: this.state.topics,
-					name: this.state.topics[0]
+					topics: this.state.topics.map((info) => {
+						return info.topic;
+					}),
+					name: this.state.topics[0].topic
 				})
 			})
 			.then((search) => {

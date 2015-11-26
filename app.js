@@ -34,7 +34,8 @@ let sessionConfig = _.extend({}, config.session, {store: new RedisStore()});
 let sess = session(sessionConfig);
 app.use(sess);
 app.io.use(ios(sess));
-require('./lib/kue').init(app.io);
+// app.storedSession = sess;
+require('./lib/kue').init(app.io, sessionConfig);
 
 let apiMiddleware = require('./lib/bookshelf-api')({
 	path: path.join(__dirname, 'models')
@@ -47,7 +48,7 @@ app.set('view engine', 'ejs');
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 // app.use(logger('dev'));
-app.use(knexLogger(knex));
+// app.use(knexLogger(knex));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());

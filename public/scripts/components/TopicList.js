@@ -1,10 +1,15 @@
 let React = require('react');
 module.exports = React.createClass({
 	render: function() {
-		console.log('render TopicList', this.props.disabled);
 		let empty = this.props.topics.length === 0;
-		let topics = this.props.topics.map((topic) => {
-			return <li key={topic}>{topic}</li>;
+		let topics = this.props.topics.map((topicInfo) => {
+			let width = Math.floor(topicInfo.progress);
+			return (
+				<li key={topicInfo.topic}>
+					<div className="progress" style={{width: width+'%'}} />
+					<div className="topic">{topicInfo.topic}</div>
+				</li>
+			);
 		});
 		return (
 			<section className={'topic-list'+ (empty ? ' empty' : '')}>

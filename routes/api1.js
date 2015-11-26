@@ -5,7 +5,57 @@ let Hashids = require('hashids');
 let hashids = new Hashids(config.hashids.salt);
 let Search = require('../models/Search');
 let Topics = require('../collections/Topics');
+let Content = require('../models/Content');
 let queue = require('../lib/kue');
+let scrub = require('../lib/scrub');
+let condense = require('../lib/condense');
+
+
+router.get('/content/analyze/:id', function(req, res, next) {
+	Content.forge({id: req.params.id}).fetch().then(function(content) {
+		let scrubbed = scrub(content.get('raw'));
+		let words = condense(scrubbed);
+		// res.end(scrubbed);
+		res.json(words);
+	});
+});
+
+router.get('/content/analyze', function(req, res, next) {
+	knex('content')
+	.whereNotNull('raw')
+	.select('*')
+	.then((content) => {
+
+		let numErrors = 0;
+
+		let contentModels = content.map((c) => {
+			let newData = {error: null};
+			let scrubbed = scrub(c.raw);
+			if(scrubbed) {
+				// let sorted = articleCandidates.sort((candidate) => {
+				// 	return -1*candidate.trim().length;
+				// });
+				// newData.scrubbed = sorted.pop().trim();
+				newData.scrubbed = scrubbed;
+				// console.log('MULTIPLE: ', c.id, newData.scrubbed.length, articleCandidates.length);
+			}
+			else {
+				console.log('NO CANDIDATES: ', c.id);
+				numErrors++;
+				newData.error = 'Scrub returned no candidates';
+			}
+
+			return Content.forge(c).save(newData).then(() => {
+				
+			});
+		});
+
+		Promise.all(contentModels)
+		.then(function() {
+			res.end('OK '+numErrors);
+		});
+	});
+});
 
 router.post('/search', function(req, res, next) {
 	req.body.topics = req.body.topics || [];
