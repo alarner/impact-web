@@ -33,6 +33,7 @@
     "config-loader": "github:alarner/config-loader",
     "connect-redis": "^3.0.1",
     "cookie-parser": "~1.4.0",
+    "d3": "^3.5.9",
     "debug": "~2.2.0",
     "ejs": "~2.3.3",
     "express": "~4.13.1",

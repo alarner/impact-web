@@ -10,6 +10,51 @@ let queue = require('../lib/kue');
 let scrub = require('../lib/scrub');
 let condense = require('../lib/condense');
 
+router.get('/force-layout/:key', function(req, res, next) {
+	knex('searchTopics')
+	.innerJoin('topics', 'searchTopics.topicId', 'topics.id')
+	.innerJoin('contentTopics', 'searchTopics.topicId', 'contentTopics.topicId')
+	.innerJoin('properNouns', 'contentTopics.contentId', 'properNouns.contentId')
+	.where('searchTopics.searchId', hashids.decode(req.params.key)[0])
+	.groupBy('topics.id', 'properNouns.text')
+	.select('topics.name', 'properNouns.text')
+	.count('*')
+	.havingRaw('COUNT(*) > ?', [1])
+	.limit(500)
+	.then(function(results) {
+		let nodes = [];
+		let nodeMap = {};
+		let links = [];
+		results.forEach((link) => {
+			if(!nodeMap.hasOwnProperty(link.name)) {
+				nodeMap[link.name] = nodes.push({
+					name: link.name,
+					type: 'topic'
+				})-1;
+			}
+			if(!nodeMap.hasOwnProperty(link.text)) {
+				nodeMap[link.text] = nodes.push({
+					name: link.text,
+					type: 'proper_noun'
+				})-1;
+			}
+
+			links.push({
+				source: nodeMap[link.name],
+				target: nodeMap[link.text],
+				value: parseInt(link.count)/10
+			});
+		});
+
+		res.json({
+			nodes: nodes,
+			links: links
+		});
+		// res.json(results);
+		// console.log(results);
+	});
+});
+
 
 router.get('/content/analyze/:id', function(req, res, next) {
 	Content.forge({id: req.params.id}).fetch().then(function(content) {
@@ -54,6 +99,29 @@ router.get('/content/analyze', function(req, res, next) {
 		.then(function() {
 			res.end('OK '+numErrors);
 		});
+	});
+});
+
+router.get('/search/:key', function(req, res, next) {
+	let s = null;
+	Search.forge({
+		id: hashids.decode(req.params.key)[0]
+	})
+	.fetch()
+	.then(function(search) {
+		if(!search) {
+			return res.status(404).json({
+				message: 'Search not found ('+req.params.key+').',
+				status: 404
+			});
+		}
+		s = search;
+		return search.topics().fetch();
+	})
+	.then(function(topics) {
+		let result = s.toJSON({omitPivot: true});
+		result.topics = topics.toJSON({omitPivot: true});
+		res.json(result);
 	});
 });
 

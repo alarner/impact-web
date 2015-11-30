@@ -5,9 +5,9 @@ module.exports = React.createClass({
 		let topics = this.props.topics.map((topicInfo) => {
 			let width = Math.floor(topicInfo.progress);
 			return (
-				<li key={topicInfo.topic}>
+				<li key={topicInfo.name}>
 					<div className="progress" style={{width: width+'%'}} />
-					<div className="topic">{topicInfo.topic}</div>
+					<div className="topic">{topicInfo.name}</div>
 				</li>
 			);
 		});
