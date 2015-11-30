@@ -51,6 +51,10 @@ module.exports = React.createClass({
 					topics: this.state.topics
 				});
 			}
+			$.get('/api/v1/force-layout/'+this.props.searchKey)
+			.then((result) => {
+				this.setState({data: result});
+			});
 		});
 
 		this.links = [

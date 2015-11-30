@@ -2,6 +2,7 @@ let React = require('react');
 let d3 = require('d3');
 module.exports = React.createClass({
 	componentDidMount: function() {
+		console.log('ForceLayout componentDidMount');
 		let width = 800;
 		let height = 800;
 
@@ -11,21 +12,16 @@ module.exports = React.createClass({
 		.scaleExtent([-10, 10])
 		.on('zoom', this.zoomed);
 
-		let force = d3.layout.force()
+		this.force = d3.layout.force()
 		.size([width, height])
 		.nodes(this.props.nodes)
 		.charge(function(d){
-			var charge = -50;
+			var charge = -4000;
 			if (d.index === 0) charge = 10 * charge;
 			return charge;
 		})
-		.links(this.props.links);
-
-		// let drag = d3.behavior.drag()
-		// .origin(function(d) { return d; })
-		// .on('dragstart', this.dragstarted)
-		// .on('drag', this.dragged)
-		// .on('dragend', this.dragended);
+		.links(this.props.links)
+		.linkDistance(15);
 
 		let svg = d3.select(this.refs.forceLayout).append('svg')
 		.attr('width', width)
@@ -41,13 +37,6 @@ module.exports = React.createClass({
 
 		this.container = svg.append('g');
 
-		// force
-		// 	.nodes(this.props.nodes)
-		// 	.links(this.props.graph.links)
-		// 	.start();
-
-		// // force.linkDistance(width/2);
-
 		let link = this.container.append('g')
 		.attr('class', 'links')
 		.selectAll('.link')
@@ -60,58 +49,51 @@ module.exports = React.createClass({
 		.attr('class', 'nodes')
 		.selectAll('.node')
 		.data(this.props.nodes)
-		.enter().append('circle')
+		.enter();
+
+		let circles = node.append('circle')
 		.style('fill', function(node) { return color(node.type); })
 		.attr('class', 'node')
 		.on('mouseover', function(a, b, c) {
 			console.log(a.name);
 		});
 
-		// let label = node.append('text')
-		// .attr('dy', '.35em')
-		// .text(function(d) { return d.name; });
-		// .on('mouseover', function() {
-		// 	console.log(this);
-		// })
-		// .on('mouseout', mouseout);
-
-		force.on('end', function() {
+		this.force.on('end', () => {
 			console.log('end');
-			// When this function executes, the force layout
-			// calculations have concluded. The layout will
-			// have set various properties in our nodes and
-			// links objects that we can use to position them
-			// within the SVG container.
+			let minWeight = this.props.nodes.reduce((prev, current) => {
+				return Math.min(prev, current.weight);
+			}, 100);
+			let maxWeight = this.props.nodes.reduce((prev, current) => {
+				return Math.max(prev, current.weight);
+			}, 0);
+			console.log(minWeight, maxWeight);
 
-			// First let's reposition the nodes. As the force
-			// layout runs it updates the `x` and `y` properties
-			// that define where the node should be centered.
-			// To move the node, we set the appropriate SVG
-			// attributes to their new values. We also have to
-			// give the node a non-zero radius so that it's visible
-			// in the container.
-
-			node.attr('r', 5)
+			circles.attr('r', function(d) { return Math.max(5, (d.weight-minWeight+1)/(maxWeight+1)*15); })
 				.attr('cx', function(d) { return d.x; })
 				.attr('cy', function(d) { return d.y; });
 
-			// We also need to update positions of the links.
-			// For those elements, the force layout sets the
-			// `source` and `target` properties, specifying
-			// `x` and `y` values in each case.
+			node.append('text')
+				.attr('x', function(d) { return d.x; })
+				.attr('y', function(d) { return d.y; })
+				.attr('text-anchor', 'middle')
+				.attr('dy', '1.25em')
+				.text(function(d) { return d.name; })
+				.style("fill", "#555").style("font-family", "Arial").style("font-size", 12);
 
 			link.attr('x1', function(d) { return d.source.x; })
 				.attr('y1', function(d) { return d.source.y; })
 				.attr('x2', function(d) { return d.target.x; })
 				.attr('y2', function(d) { return d.target.y; });
 
-			// label
-			// 	.attr('x', function(d) { return d.x + 8; })
-			// 	.attr('y', function(d) { return d.y; });
-
 		});
 
-		force.start();
+		this.force.start();
+	},
+	componentWillReceiveProps: function(nextProps) {
+		if(this.props.nodes.length !== nextProps.nodes.length) {
+			this.force.nodes(nextProps.nodes);
+			this.force.links(nextProps.links);
+		}
 	},
 	zoomed: function() {
 		this.container.attr('transform', 'translate(' + d3.event.translate + ')scale(' + d3.event.scale + ')');
