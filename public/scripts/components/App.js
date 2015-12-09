@@ -24,7 +24,33 @@ module.exports = React.createClass({
 					topics: result.topics
 				});
 			});
-			$.get('/api/v1/force-layout/'+this.props.searchKey)
+			$.ajax({
+				url: '/api/v1/force-layout/'+this.props.searchKey,
+				type: 'post',
+				contentType: 'application/json',
+				data: JSON.stringify({
+					ignore: [
+						'personalPronouns',
+						'relativePronouns',
+						'demonstrativePronouns',
+						'indefinitePronouns',
+						'reflexivePronouns',
+						'interrogativePronouns',
+						'possessivePronouns',
+						'subjectAndObjectPronouns',
+						'prepositions',
+						'coordinatingConjunctions',
+						'subordinatingConjunctions',
+						'conjunctiveAdverbs',
+						'articles',
+						'contractions',
+						'days',
+						'months',
+						'languages',
+						'bigCities'
+					]
+				})
+			})
 			.then((result) => {
 				this.setState({data: result});
 			});
@@ -51,7 +77,33 @@ module.exports = React.createClass({
 					topics: this.state.topics
 				});
 			}
-			$.get('/api/v1/force-layout/'+this.props.searchKey)
+			$.ajax({
+				url: '/api/v1/force-layout/'+this.props.searchKey,
+				type: 'post',
+				contentType: 'application/json',
+				data: JSON.stringify({
+					ignore: [
+						'personalPronouns',
+						'relativePronouns',
+						'demonstrativePronouns',
+						'indefinitePronouns',
+						'reflexivePronouns',
+						'interrogativePronouns',
+						'possessivePronouns',
+						'subjectAndObjectPronouns',
+						'prepositions',
+						'coordinatingConjunctions',
+						'subordinatingConjunctions',
+						'conjunctiveAdverbs',
+						'articles',
+						'contractions',
+						'days',
+						'months',
+						'languages',
+						'bigCities'
+					]
+				})
+			})
 			.then((result) => {
 				this.setState({data: result});
 			});

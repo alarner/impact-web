@@ -5,6 +5,7 @@
   "scripts": {
     "start": "node --use_strict ./bin/www",
     "resetdb": "./bin/resetdb.sh",
+    "refreshdb": "./bin/resetdb.sh",
     "kue": "./node_modules/kue/bin/kue-dashboard -p 3050 -r redis://127.0.0.1:6379"
   },
   "devDependencies": {
